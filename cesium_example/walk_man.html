@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Include the CesiumJS JavaScript and CSS files -->
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <script type="module">
+    // Your access token can be found at: https://ion.cesium.com/tokens.
+    // Replace `your_access_token` with your Cesium ion access token.
+
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4ZTdiNDkzZi05MTBmLTQ3MWYtOGE1Ny1iNmI1MjllZGEyNDMiLCJpZCI6NTc5MDYsImlhdCI6MTcxMzc2Njk5NX0.sALSZ21qi9jXbazm5TRDwLL_mKGGokDUjj8f2VHsgpw';
+
+    
+    const czml = [
+  {
+    id: "document",
+    name: "CZML Point - Time Dynamic",
+    version: "1.0",
+  },
+  {
+    id: "point",
+    availability: "2012-08-04T16:00:00Z/2012-08-04T16:10:00Z",
+    position: {
+      epoch: "2012-08-04T16:00:00Z",
+      "cartographicDegrees":[
+      0.0,90.56607055664062,34.268043518066406,0,
+10.0,92.82191467285156,34.077484130859375,0,
+20.0,93.80691528320312,34.25720977783203,0,
+30.0,94.54774475097656,34.75665283203125,0,
+40.0,95.33331298828125,34.48442840576172,0,
+50.0,95.9246826171875,33.890541076660156,0,
+60.0,97.01469421386719,33.315818786621094,0,
+70.0,97.46441650390625,32.672210693359375,0,
+80.0,98.21080017089844,32.34248352050781,0,
+90.0,98.87718200683594,31.354442596435547,0,
+100.0,98.60662841796875,31.227489471435547,0,
+110.0,98.9527587890625,30.74498748779297,0,
+120.0,99.15553283691406,28.431659698486328,0,
+130.0,99.6483154296875,27.323326110839844,0,
+140.0,99.96580505371094,26.882770538330078,0,
+150.0,100.4013671875,27.843048095703125,0,
+160.0,100.44830322265625,26.214157104492188,0,
+170.0,100.93885803222656,26.198047637939453,0,
+180.0,101.79888916015625,26.602550506591797,0,
+190.0,101.86469268798828,25.97110366821289,0,
+200.0,102.56468200683594,26.374713897705078,0,
+210.0,102.67579650878906,26.21860122680664,0,
+220.0,102.98052978515625,26.35332489013672,0,
+230.0,102.88246154785156,27.27527618408203,0,
+240.0,103.49968719482422,27.834716796875,0,
+250.0,103.44830322265625,28.11943817138672,0,
+260.0,103.87523651123047,28.318607330322266,0,
+270.0,103.84774780273438,28.663043975830078,0,
+280.0,105.10106658935547,28.711936950683594,0,
+290.0,105.58997344970703,28.96805191040039,0,
+300.0,105.83268737792969,28.813655853271484,0,
+310.0,106.58580017089844,29.610820770263672,0,
+320.0,107.71803283691406,29.876937866210938,0,
+330.0,108.62439727783203,30.94666290283203,0,
+340.0,109.94998168945312,31.068328857421875,0,
+350.0,111.13691711425781,30.843048095703125,0,
+360.0,111.55191040039062,30.268325805664062,0,
+370.0,111.85442352294922,30.42388153076172,0,
+380.0,112.21469116210938,30.303043365478516,0,
+390.0,112.37162780761719,29.72665786743164,0,
+400.0,113.02024841308594,29.773601531982422,0,
+410.0,112.90492248535156,29.588045120239258,0,
+420.0,113.05079650878906,29.44082260131836,0,
+430.0,114.06385803222656,30.086654663085938,0,
+440.0,113.85357666015625,30.213321685791016,0,
+450.0,114.43868255615234,30.66973876953125,0,
+460.0,114.80952453613281,30.60657501220703,0,
+470.0,115.42613220214844,29.874235153198242,0,
+480.0,115.9525146484375,29.735713958740234,0,
+490.0,116.52455139160156,29.89904022216797,0,
+500.0,116.97280883789062,30.468795776367188,0,
+510.0,117.70973205566406,30.8125057220459,0,
+520.0,117.77254486083984,31.118009567260742,0,
+530.0,118.32359313964844,31.309307098388672,0,
+540.0,118.7591552734375,32.14546203613281,0,
+550.0,119.61310577392578,32.19064712524414,0
+      ],
+      // "cartesian":[
+      //   0.0,106991.23369298135,5659306.341225581,2924114.5005072523,
+      //   10.0,106991.23369298135,5659507.341225581,2924114.5005072523,
+      //   20.0,106991.23369298135,5659608.341225581,2924114.5005072523,
+      //   30.0,106991.23369298135,5659709.341225581,2924114.5005072523
+      // ],
+      // cartographicDegrees: [
+      //   0,
+      //   -70,
+      //   20,
+      //   1500,
+      //   100,
+      //   -80,
+      //   44,
+      //   1500,
+      //   200,
+      //   -90,
+      //   18,
+      //   1500,
+      //   300,
+      //   -98,
+      //   52,
+      //   1500,
+      // ],
+    },
+    model: {
+      gltf: "Cesium_Man.glb",
+      scale: 140.0,
+      minimumPixelSize: 256,
+      "color": {
+            "rgba": [255, 255, 255, 255] // 设置颜色为白色
+        }
+    },
+    point: {
+      color: {
+        rgba: [255, 255, 255, 128],
+      },
+      outlineColor: {
+        rgba: [255, 0, 0, 128],
+      },
+      outlineWidth: 3,
+      pixelSize: 35,
+    },
+  },
+];
+
+const viewer = new Cesium.Viewer("cesiumContainer", {
+  shouldAnimate: true,
+});
+
+viewer.dataSources.add(Cesium.CzmlDataSource.load(czml));
+
+var promise = Cesium.GeoJsonDataSource.load('yangzijiang.geojson');
+
+promise.then(function(dataSource) {
+    // Add the GeoJSON data to the viewer
+    viewer.dataSources.add(dataSource);
+
+    // Zoom to the loaded data
+    viewer.zoomTo(dataSource);
+}).otherwise(function(error){
+    // Display an error message if loading fails
+    console.error(error);
+});
+
+    // const viewer = new Cesium.Viewer("cesiumContainer", {
+    // terrain: Cesium.Terrain.fromWorldTerrain(),
+    // baseLayerPicker: false,
+    // shouldAnimate: true,
+    // });
+    // const czmlUrl = 'test.czml';
+    // const dataSource = await viewer.dataSources.add(
+    // Cesium.CzmlDataSource.load(czml)
+    // );
+
+
+    
+
+    // viewer.trackedEntity = dataSource.entities.getById("path"); 
+
+    // // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
+    // const viewer = new Cesium.Viewer('cesiumContainer', {
+    //   terrain: Cesium.Terrain.fromWorldTerrain(),
+    // });    
+
+    // // Fly the camera to San Francisco at the given longitude, latitude, and height.
+    // viewer.camera.flyTo({
+    //   destination: Cesium.Cartesian3.fromDegrees(-122.4175, 37.655, 400),
+    //   orientation: {
+    //     heading: Cesium.Math.toRadians(0.0),
+    //     pitch: Cesium.Math.toRadians(-15.0),
+    //   }
+    // });
+
+    // // Add Cesium OSM Buildings, a global 3D buildings layer.
+    // const buildingTileset = await Cesium.createOsmBuildingsAsync();
+    // viewer.scene.primitives.add(buildingTileset);   
+  </script>
+ </div>
+</body>
+</html>

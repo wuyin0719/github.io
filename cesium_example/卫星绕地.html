@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Include the CesiumJS JavaScript and CSS files -->
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+  <button onclick="showAllEntities()">显示隐藏entities</button>
+  <button onclick="refresh()">刷新显示</button>
+  <div id="cesiumContainer"></div>
+  <script type="module">
+    // Your access token can be found at: https://ion.cesium.com/tokens.
+    // Replace `your_access_token` with your Cesium ion access token.
+
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4ZTdiNDkzZi05MTBmLTQ3MWYtOGE1Ny1iNmI1MjllZGEyNDMiLCJpZCI6NTc5MDYsImlhdCI6MTcxMzc2Njk5NX0.sALSZ21qi9jXbazm5TRDwLL_mKGGokDUjj8f2VHsgpw';
+
+const viewer = new Cesium.Viewer("cesiumContainer", {
+shouldAnimate: true,
+});
+
+window.viewer=viewer;
+window.show=true;
+
+
+// Add a blank CzmlDataSource to hold our multi-part entity/entities.
+const dataSource = new Cesium.CzmlDataSource();
+viewer.dataSources.add(dataSource);
+
+var czmlDataSource=Cesium.CzmlDataSource.load("spacety_satellite.czml");
+viewer.dataSources.add(
+  czmlDataSource
+  );
+
+  viewer.camera.flyHome(0);
+  // var utcMilliseconds = Date.UTC(2024, 4, 30, 14, 4, 47);
+  var utcMilliseconds = Date.UTC(2024, 4, 30, 14, 2, 38);
+// 使用这个毫秒值来创建一个UTC时间的Date对象
+var desiredTime = new Date(utcMilliseconds);
+
+// 将UTC时间的Date对象转换为Cesium的JulianDate对象
+var newTime = Cesium.JulianDate.fromDate(desiredTime);
+  
+  var clock = viewer.clock;
+  clock.currentTime =newTime;
+  // clock.shouldAnimate = false;
+  console.log('newtime',newTime ,Cesium.JulianDate.toIso8601(newTime));
+
+  czmlDataSource.then(function(czmlDataSource) {
+    // Access the loaded CZML data source object here
+    var entityIds = [];
+
+    czmlDataSource.entities.values.forEach(function(entity) {
+        entityIds.push(entity.id);
+    });
+
+    console.log('All entity IDs in czmlDataSource:', entityIds);
+
+    var positions = Cesium.Cartesian3.fromDegreesArray([
+    116.3974, 39.9093,
+    116.4101, 39.9096,
+    116.4155, 39.8938,
+    116.3987, 39.8923
+    ]);
+
+    // 创建多边形实体
+    viewer.entities.add({
+        polygon : {
+            hierarchy : new Cesium.PolygonHierarchy(positions),
+            material : Cesium.Color.RED.withAlpha(0.5)
+        }
+    });
+
+    var normalLine=[Cesium.Cartesian3.fromDegrees(116.3974, 39.9093),Cesium.Cartesian3.fromDegrees(116.3974, 39.9093,100000)];
+    viewer.entities.add({  
+    polyline: {  
+        positions: normalLine, // 设置线条的坐标点  
+        width: 5, // 设置线条宽度  
+        material: Cesium.Color.YELLOW.withAlpha(0.8) // 设置线条颜色和透明度  
+        // 可以设置更多属性，如跟随地形等  
+    }  
+    }); 
+
+
+
+    console.log('Current desiredTime:', desiredTime);
+    var satellite1Position = czmlDataSource.entities.getById("Satellite/TY-40").position.getValue(newTime);
+    // var satellite1Position = czmlDataSource.entities.getById("Satellite/TY-40").position.getValue(viewer.clock.currentTime);
+    console.log('Current satellite1Position', satellite1Position);
+    for (var i = 0; i < positions.length; i += 1) {
+    var linepositions = [  
+    // 注意：这里通常使用Cesium.Cartesian3.fromDegreesArrayHeights或Cesium.Cartesian3.fromDegreesArray来从经纬度转换为笛卡尔坐标  
+    // 但为了示例，我们直接给出笛卡尔坐标  
+    // satellite1Position,  
+    new Cesium.Cartesian3(satellite1Position.x, satellite1Position.y, satellite1Position.z),
+    positions[i],
+    // Cesium.Cartesian3.fromDegrees(116.3974, 39.9093),  
+    // ... 更多的点  
+    ];
+    viewer.entities.add({  
+    polyline: {  
+        positions: linepositions, // 设置线条的坐标点  
+        width: 5, // 设置线条宽度  
+        material: Cesium.Color.RED.withAlpha(0.8) // 设置线条颜色和透明度  
+        // 可以设置更多属性，如跟随地形等  
+    }  
+    });  
+  }
+  var satellite1Position = new Cesium.Cartesian3(satellite1Position.x, satellite1Position.y, satellite1Position.z); 
+  var ellipsoid = Cesium.Ellipsoid.WGS84; // WGS84椭球体
+
+  // 将Cartesian3转换为经纬度
+  var cartographicPosition = ellipsoid.cartesianToCartographic(satellite1Position);
+
+  // 获取经度、纬度和高度
+  var longitude = Cesium.Math.toDegrees(cartographicPosition.longitude);
+  var latitude = Cesium.Math.toDegrees(cartographicPosition.latitude);
+  
+  var normalLine=[satellite1Position,
+  Cesium.Cartesian3.fromDegrees(longitude, latitude)];
+    viewer.entities.add({  
+    polyline: {  
+        positions: normalLine, // 设置线条的坐标点  
+        width: 5, // 设置线条宽度  
+        material: Cesium.Color.YELLOW.withAlpha(0.8) // 设置线条颜色和透明度  
+        // 可以设置更多属性，如跟随地形等  
+    }  
+    }); 
+
+
+  clock.currentTime =newTime;
+  clock.shouldAnimate = false;
+    console.log('Current position of satellite 1:', positions);
+
+    console.log('Current position of satellite 1:', satellite1Position);
+    // console.log('Time difference in seconds:', beijingTimeString);
+}).catch(function(error) {
+    // Handle any errors that occurred during loading
+    console.error('An error occurred while loading the CZML data source:', error);
+});
+
+
+
+
+// 停止时钟，以确保时间固定在特定时刻
+// viewer.timeline.zoomTo(newTime, 1);
+// clock.shouldAnimate = false;
+
+
+
+var beijingPosition = Cesium.Cartesian3.fromDegrees(116.3974, 39.9093,1000000);
+
+viewer.camera.flyTo({
+    destination: beijingPosition,
+    orientation: {
+        heading: Cesium.Math.toRadians(0),
+        pitch: Cesium.Math.toRadians(-90), // Look from top down
+        roll: 0
+    }
+});
+
+// clock.shouldAnimate = false;
+clock.currentTime =newTime;
+  clock.shouldAnimate = false;
+  console.log("xxxxxxxxxxxxxxxxxxxxxxx"); 
+
+
+  </script>
+  <script>
+    //  window.onload = init;
+    function showAllEntities() {
+      // viewer.entities
+      // console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaa',window.viewer);
+      if(window.show){
+        window.viewer.entities.values.forEach(function(entity) {
+        entity.show = false;
+    });
+    
+      }
+      else{
+        window.viewer.entities.values.forEach(function(entity) {
+        entity.show = true;
+    });
+    }
+      window.show=!window.show;
+  }
+  </script>
+ </div>
+</body>
+</html>

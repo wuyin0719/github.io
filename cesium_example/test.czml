@@ -1,0 +1,73 @@
+[
+{
+    "version": "1.0",
+    "id": "document",
+    "name": "weather_turkey"
+}
+    ,{
+        "position": {
+            "cartographicDegrees": [
+                "32.6044409" 
+                ,"39.6718998" 
+                ,11000
+            ]
+        }
+        ,"label": {
+            "text": "Ankara",
+            "interval": "2021-01-15T00:00:00+00:00/2021-01-15T23:59:59+00:00",
+            "fillColor": {"rgba": [255,255,255,255]},
+            "scaleByDistance": { "nearFarScalar": [150,3,3000,1] },
+            "disableDepthTestDistance": 9999999999,
+            "outlineWidth": 3,
+            "outlineColor": {"rgba": [0, 0, 0, 255]}, 
+            "style": "FILL_AND_OUTLINE", 
+            "heightReference": "RELATIVE_TO_GROUND"
+        }
+        ,"id": "PyQt5.QtCore.QDateTime(2021, 1, 15, 0, 0)"
+        ,"description": "Ankara"
+    }
+    ,{
+        "position": {
+            "cartographicDegrees": [
+                "28.5697927" 
+                ,"41.2510853" 
+                ,11000
+            ]
+        }
+        ,"label": {
+            "text": "İstanbul",
+            "interval": "2021-01-15T00:00:00+00:00/2021-01-15T23:59:59+00:00",
+            "fillColor": {"rgba": [255,255,255,255]},
+            "scaleByDistance": { "nearFarScalar": [150,3,3000,1] },
+            "disableDepthTestDistance": 9999999999,
+            "outlineWidth": 3,
+            "outlineColor": {"rgba": [0, 0, 0, 255]}, 
+            "style": "FILL_AND_OUTLINE", 
+            "heightReference": "RELATIVE_TO_GROUND"
+        }
+        ,"id": "PyQt5.QtCore.QDateTime(2021, 1, 15, 0, 0)"
+        ,"description": "İstanbul"
+    }
+    ,{
+        "position": {
+            "cartographicDegrees": [
+                "26.9917514" 
+                ,"38.6558323" 
+                ,11000
+            ]
+        }
+        ,"label": {
+            "text": "İzmir",
+            "interval": "2021-01-15T00:00:00+00:00/2021-01-15T23:59:59+00:00",
+            "fillColor": {"rgba": [255,255,255,255]},
+            "scaleByDistance": { "nearFarScalar": [150,3,3000,1] },
+            "disableDepthTestDistance": 9999999999,
+            "outlineWidth": 3,
+            "outlineColor": {"rgba": [0, 0, 0, 255]}, 
+            "style": "FILL_AND_OUTLINE", 
+            "heightReference": "RELATIVE_TO_GROUND"
+        }
+        ,"id": "PyQt5.QtCore.QDateTime(2021, 1, 15, 0, 0)"
+        ,"description": "İzmir"
+    }
+]

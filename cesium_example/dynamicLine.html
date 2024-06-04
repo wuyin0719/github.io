@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Include the CesiumJS JavaScript and CSS files -->
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <script type="module">
+    // Your access token can be found at: https://ion.cesium.com/tokens.
+    // Replace `your_access_token` with your Cesium ion access token.
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4ZTdiNDkzZi05MTBmLTQ3MWYtOGE1Ny1iNmI1MjllZGEyNDMiLCJpZCI6NTc5MDYsImlhdCI6MTcxMzc2Njk5NX0.sALSZ21qi9jXbazm5TRDwLL_mKGGokDUjj8f2VHsgpw';
+const viewer = new Cesium.Viewer("cesiumContainer", {
+  shouldAnimate: true,
+});
+
+// viewer.dataSources.add(Cesium.CzmlDataSource.load(czml));
+
+var allCoordinates=  await Cesium.GeoJsonDataSource.load('yangzijiang.geojson').then(function(dataSource) {
+    var allCoordinates = [];
+
+    // 将DataSource添加到场景中（可选）
+    // viewer.dataSources.add(dataSource);
+    
+
+    // 遍历GeoJSON中的所有实体
+    dataSource.entities.values.forEach(function(entity) {
+        
+        if (entity.polyline || entity.polygon) {
+            // 对于线或面，提取路径坐标
+            var positions = entity.polyline ? entity.polyline.positions : entity.polygon.hierarchy ? entity.polygon.hierarchy : entity.polygon.positions;
+            allCoordinates = allCoordinates.concat(positions.getValue());
+        } else if (entity.point) {
+            // 对于点，直接提取位置
+            var position = entity.point.position;
+            allCoordinates.push(position.get());
+        }
+    });
+    return allCoordinates;
+    // 此时，allCoordinates数组包含了GeoJSON中的所有坐标点
+    // console.log(allCoordinates);
+});
+
+console.log('allCoordinates',allCoordinates.length);
+    // var positions = Cesium.Cartesian3.fromDegreesArray([
+    //     116.3974, 39.9093,
+    //     116.4101, 39.9096,
+    //     116.4155, 39.8938,
+    //     116.3987, 39.8923
+    //     ]);
+
+    var entity =viewer.entities.add({
+        polyline: {  
+        positions: allCoordinates, // 设置线条的坐标点  
+        width: 5, // 设置线条宽度  
+        material: Cesium.Color.YELLOW.withAlpha(0.8) // 设置线条颜色和透明度  
+        // 可以设置更多属性，如跟随地形等  
+    }  
+    });
+
+    // entity.polyline.positions =Cesium.Cartesian3.fromDegreesArray([
+    //     116.3974, 39.9093,
+    //     116.4101, 39.9096,]);
+
+    var beijingPosition = Cesium.Cartesian3.fromDegrees(116.3974, 33.9093,10000000);
+    
+    viewer.camera.flyTo({
+        destination: beijingPosition,
+        orientation: {
+            heading: Cesium.Math.toRadians(0),
+            pitch: Cesium.Math.toRadians(-90), // Look from top down
+            roll: 0
+        }
+});
+
+var n=0;
+
+setInterval(function() {
+            // var currentTime = new Date().getTime(); // 获取当前时间戳（毫秒）
+            // console.log(currentTime);
+            n=n+1;
+            var remainder1 = n % allCoordinates.length;
+            console.log(remainder1,allCoordinates.length);
+            entity.polyline.positions = allCoordinates.slice(0,remainder1);
+        }, 100);
+
+        // setInterval(function() {
+        //     var currentTime = new Date().getTime(); // 获取当前时间戳（毫秒）
+        //     console.log('currentTime',currentTime);
+        // }, 1000);
+
+
+
+
+
+  </script>
+ </div>
+</body>
+</html>

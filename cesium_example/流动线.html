@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cesium 动态绘制轨迹线示例</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.83/Build/Cesium/Cesium.js"></script>
+    <link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.83/Build/Cesium/Widgets/widgets.css">
+    <style>
+        #cesiumContainer {
+            width: 100%;
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="cesiumContainer"></canvas>
+    <script>
+        var viewer = new Cesium.Viewer('cesiumContainer');
+
+        var graphics = viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(-75.59777, 40.03883),
+            point: {
+                pixelSize: 10,
+                outlineColor: Cesium.Color.WHITE,
+                outlineWidth: 2
+            },
+            polyline: {
+                width: 4,
+                material: Cesium.Color.RED
+            }
+        });
+
+        setInterval(function() {
+            var currentTime = new Date().getTime(); // 获取当前时间戳（毫秒）
+            var point = Cesium.Cartesian3.fromDegrees(currentTime * 0.001, 40); // 将时间戳转换为经纬度坐标
+            graphics.position = point; // 更新Graphics对象的position属性
+            viewer.entities.update(Date.now()); // 更新实体属性，重新渲染场景
+        }, 1000); // 每秒钟更新一次位置
+    </script>
+</body>
+</html>

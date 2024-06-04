@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Cesium Line Animation with CallbackProperty</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<script>
+    var viewer = new Cesium.Viewer('cesiumContainer', {
+        terrain: Cesium.Terrain.fromWorldTerrain()
+    });
+
+    // 创建一个动态的属性，用于控制点的位置
+    var positionProperty = new Cesium.CallbackProperty(function(time, result) {
+        var seconds = Cesium.JulianDate.secondsDifference(time, Cesium.JulianDate.now());
+        var latitude = Cesium.Math.lerp(35.0, 35.5, Cesium.Math.clamp(seconds / 60.0, 0.0, 1.0));
+        var longitude = Cesium.Math.lerp(-120.0, -120.5, Cesium.Math.clamp(seconds / 60.0, 0.0, 1.0));
+        return Cesium.Cartesian3.fromDegrees(longitude, latitude, 10000.0);
+    }, false);
+
+    // 创建一个实体，表示移动的点
+    var pointEntity = viewer.entities.add({
+        position: positionProperty,
+        point: {
+            color: Cesium.Color.YELLOW,
+            pixelSize: 10,
+            outlineColor: Cesium.Color.WHITE,
+            outlineWidth: 2
+        }
+    });
+
+    // 创建一条线，表示点移动的路径
+    var positions = [
+        Cesium.Cartesian3.fromDegrees(-120.0, 35.0, 10000.0),
+        Cesium.Cartesian3.fromDegrees(-120.5, 35.5, 10000.0)
+    ];
+    var polyline = viewer.entities.add({
+        polyline: {
+            positions: positions,
+            material: Cesium.Color.YELLOW,
+            width: 2
+        }
+    });
+
+    // 启动动画
+    viewer.clock.shouldAnimate = true;
+    viewer.timeline.makeLabel();
+</script>
+</body>
+</html>

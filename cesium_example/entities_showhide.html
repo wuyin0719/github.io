@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Include the CesiumJS JavaScript and CSS files -->
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <script type="module">
+    // Your access token can be found at: https://ion.cesium.com/tokens.
+    // Replace `your_access_token` with your Cesium ion access token.
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4ZTdiNDkzZi05MTBmLTQ3MWYtOGE1Ny1iNmI1MjllZGEyNDMiLCJpZCI6NTc5MDYsImlhdCI6MTcxMzc2Njk5NX0.sALSZ21qi9jXbazm5TRDwLL_mKGGokDUjj8f2VHsgpw';
+const viewer = new Cesium.Viewer("cesiumContainer", {
+  shouldAnimate: true,
+});
+
+// viewer.dataSources.add(Cesium.CzmlDataSource.load(czml));
+
+    // var positions = Cesium.Cartesian3.fromDegreesArray([
+    //     116.3974, 39.9093,
+    //     116.4101, 39.9096,
+    //     116.4155, 39.8938,
+    //     116.3987, 39.8923
+    //     ]);
+
+    // var entity =viewer.entities.add({
+    //     polyline: {  
+    //     positions: positions, // 设置线条的坐标点  
+    //     width: 5, // 设置线条宽度  
+    //     material: Cesium.Color.YELLOW.withAlpha(0.8) // 设置线条颜色和透明度  
+    //     // 可以设置更多属性，如跟随地形等  
+    // }  
+    // });
+
+    // entity.polyline.positions =Cesium.Cartesian3.fromDegreesArray([
+    //     116.3974, 39.9093,
+    //     116.4101, 39.9096,]);
+
+    var beijingPosition = Cesium.Cartesian3.fromDegrees(120, 30,10000000);
+
+    viewer.camera.flyTo({
+        destination: beijingPosition,
+        orientation: {
+            heading: Cesium.Math.toRadians(0),
+            pitch: Cesium.Math.toRadians(-90), // Look from top down
+            roll: 0
+        }
+    });
+
+
+    viewer.entities.add({
+    position: Cesium.Cartesian3.fromDegrees(120, 30, 5),
+    point: {
+        color: Cesium.Color.RED,
+        pixelSize: 10
+    },
+    label: {
+        text: '测试名称',
+        font: '14pt Source Han Sans CN',
+        fillColor: Cesium.Color.BLACK,
+        backgroundColor: Cesium.Color.AQUA,
+        showBackground: true,
+        outline: true,
+        outlineColor: Cesium.Color.WHITE,
+        outlineWidth: 10,
+        scale: 1.0,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        verticalOrigin: Cesium.VerticalOrigin.CENTER,
+        horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+        pixelOffset: new Cesium.Cartesian2(10, 0),
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 1500),
+        show: true
+    }
+});
+
+
+
+
+  </script>
+ </div>
+</body>
+</html>
