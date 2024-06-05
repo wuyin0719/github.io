@@ -21,7 +21,7 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
 
 // viewer.dataSources.add(Cesium.CzmlDataSource.load(czml));
 
-var allCoordinates=  await Cesium.GeoJsonDataSource.load('greatwall.geojson').then(function(dataSource) {
+var allCoordinates=  await Cesium.GeoJsonDataSource.load('成都2.geojson').then(function(dataSource) {
     var allCoordinates = [];
 
     // 将DataSource添加到场景中（可选）
@@ -33,8 +33,11 @@ var allCoordinates=  await Cesium.GeoJsonDataSource.load('greatwall.geojson').th
         
         if (entity.polyline || entity.polygon) {
             // 对于线或面，提取路径坐标
+            
             var positions = entity.polyline ? entity.polyline.positions : entity.polygon.hierarchy ? entity.polygon.hierarchy : entity.polygon.positions;
-            allCoordinates = allCoordinates.concat(positions.getValue());
+            // console.log('positions',positions.getValue()['positions']);
+            // allCoordinates = allCoordinates.concat(positions.getValue());//线
+            allCoordinates = allCoordinates.concat(positions.getValue()['positions']);//面
         } else if (entity.point) {
             // 对于点，直接提取位置
             var position = entity.point.position;
@@ -50,7 +53,8 @@ var entity =viewer.entities.add({
         polyline: {  
         positions: allCoordinates, // 设置线条的坐标点  
         width: 5, // 设置线条宽度  
-        material:Cesium.Color.fromBytes(165, 42, 42, 204)// Cesium.Color.YELLOW.withAlpha(0.8) // 设置线条颜色和透明度  
+        material:Cesium.Color.YELLOW.withAlpha(0.8)
+        // material:Cesium.Color.fromBytes(165, 42, 42, 204)// Cesium.Color.YELLOW.withAlpha(0.8) // 设置线条颜色和透明度  
         // 可以设置更多属性，如跟随地形等  
     }  
     });
@@ -94,7 +98,7 @@ var n=0;
 var positionsProperty = new Cesium.CallbackProperty(function (time, result) {
     // 根据当前时间计算端点的位置
     n=n+1;
-    var remainder1 = n % allCoordinates.length;
+    var remainder1 = (n*10) % allCoordinates.length;
 
     // 返回更新后的线段位置数组
     return allCoordinates.slice(0,remainder1);

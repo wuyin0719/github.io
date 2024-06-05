@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Include the CesiumJS JavaScript and CSS files -->
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <script type="module">
+    // Your access token can be found at: https://ion.cesium.com/tokens.
+    // Replace `your_access_token` with your Cesium ion access token.
+
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4ZTdiNDkzZi05MTBmLTQ3MWYtOGE1Ny1iNmI1MjllZGEyNDMiLCJpZCI6NTc5MDYsImlhdCI6MTcxMzc2Njk5NX0.sALSZ21qi9jXbazm5TRDwLL_mKGGokDUjj8f2VHsgpw';
+    var coordinatesList = [];
+    const osm = new Cesium.OpenStreetMapImageryProvider({
+    url : 'https://tile.openstreetmap.org/'
+});
+
+// let gaodeVecBaseMapLayer = new Cesium.ImageryLayer(new Cesium.UrlTemplateImageryProvider({
+//     url: "http://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+//     layer: "tdtVecBasicLayer",
+//     style: "default",
+//     format: "image/png",
+//     tileMatrixSetID: "GoogleMapsCompatible"
+// }),{
+//   show: true,
+//   alpha: 1
+// });
+
+
+    const viewer = new Cesium.Viewer("cesiumContainer", {
+      // baseLayer: Cesium.ImageryLayer.fromProviderAsync(osm),
+  terrain: Cesium.Terrain.fromWorldTerrain(),
+  shouldAnimate: true,
+});
+
+
+const osmBuiding=await Cesium.createOsmBuildingsAsync();
+viewer.scene.primitives.add(osmBuiding);
+// viewer.scene.primitives.add(osm);
+    
+   var apires= fetch('http://localhost:8000/query/?topic=长沙地铁&person=2号线')
+  .then(response => response.text())
+  .then(data => {
+    var res_list=JSON.parse(data)['results'][0][0];
+    console.log('res_list',res_list);
+    res_list.forEach(function(item) {
+    // 访问 'person' 字段
+    var person = item.person;
+    var coordinates=JSON.parse(item.location_geojson)['coordinates'];
+    var i=0;
+    coordinates.forEach(function(item){
+      i=i+10;
+      coordinatesList.push(i,item[0],item[1],0);//item[0],item[1],0
+    })
+    
+  });
+  var subArray = coordinatesList;//.slice(0, 60*4);
+  // console.log('data',subArray);
+  return subArray;
+  })
+  .catch(error => console.error('Error:', error));
+  // var subArray=null;
+
+
+  var filteredArray=await apires.then(subArray=>{
+    // viewer.dataSources.add(dataSource);
+    var filteredArray = [];
+    for (var i = 1; i < subArray.length - 1; i += 4) {
+      // 检查索引是否有效
+      if (i + 1 < subArray.length) {
+        filteredArray.push(subArray[i]);
+        filteredArray.push(subArray[i + 1]);
+      }
+    }
+    return filteredArray
+
+  })
+
+      // var positions = Cesium.Cartesian3.fromDegreesArray(filteredArray);
+      // var polylineCollection = new Cesium.PolylineCollection();
+      // viewer.scene.primitives.add(polylineCollection);
+
+      var positions = Cesium.Cartesian3.fromDegreesArray(filteredArray);
+
+var polyline =viewer.entities.add({
+    polyline: {  
+    positions: positions, // 设置线条的坐标点  
+    width: 5, // 设置线条宽度  
+        material: Cesium.Color.YELLOW,  
+        clampToGround: true,// 贴地  
+    // },
+    // 可以设置更多属性，如跟随地形等  
+}  
+});
+      
+
+    //   var polyline = polylineCollection.add({
+    //     positions: [], // 设置线条的坐标点  
+    //     width: 5, // 设置线条宽度  
+    //     material: Cesium.Color.YELLOW,
+    //     clampToGround: true,// 贴地  
+    //   });
+    //   console.log('polyline',polyline);
+    // var entity =viewer.entities.add(polyline);
+    var beijingPosition = Cesium.Cartesian3.fromDegrees(filteredArray[0], filteredArray[1],10000);
+
+    viewer.camera.flyTo({
+        destination: beijingPosition,
+        orientation: {
+            heading: Cesium.Math.toRadians(0),
+            pitch: Cesium.Math.toRadians(-90), // Look from top down
+            roll: 0
+        }
+    });
+
+
+    viewer.clock.shouldAnimate = true;
+viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP; // 循环播放
+viewer.clock.multiplier = 1000; // 时间轴的速度
+
+function updatePolyline(time) {
+  console.log(time);
+
+   var index = Math.floor(time % positions.length);
+    var newPositions =positions.slice(0,index);
+    // console.log('newPositions',time,index,newPositions);
+    console.log('newPositions',time,index);
+//     // polyline.set
+    polyline.positions=newPositions;
+    viewer.entities.update(Date.now()); 
+}
+
+// 监听时间轴的tick事件来更新线的位置
+viewer.clock.onTick.addEventListener(function(clock) {
+    updatePolyline(clock.currentTime.secondsOfDay);
+});
+
+// // 启动动画
+viewer.clock.startTime = Cesium.JulianDate.now();
+viewer.clock.stopTime = Cesium.JulianDate.addSeconds(viewer.clock.startTime, 60, new Cesium.JulianDate());
+viewer.clock.currentTime = viewer.clock.startTime;
+
+
+  // const results = await Promise.all(results);
+  // console.log('filteredArray',filteredArray);
+
+
+
+  </script>
+ </div>
+</body>
+</html>

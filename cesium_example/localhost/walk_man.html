@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Include the CesiumJS JavaScript and CSS files -->
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <script type="module">
+    // Your access token can be found at: https://ion.cesium.com/tokens.
+    // Replace `your_access_token` with your Cesium ion access token.
+
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4ZTdiNDkzZi05MTBmLTQ3MWYtOGE1Ny1iNmI1MjllZGEyNDMiLCJpZCI6NTc5MDYsImlhdCI6MTcxMzc2Njk5NX0.sALSZ21qi9jXbazm5TRDwLL_mKGGokDUjj8f2VHsgpw';
+    var coordinatesList = [];
+    const osm = new Cesium.OpenStreetMapImageryProvider({
+    url : 'https://tile.openstreetmap.org/'
+});
+
+// let gaodeVecBaseMapLayer = new Cesium.ImageryLayer(new Cesium.UrlTemplateImageryProvider({
+//     url: "http://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+//     layer: "tdtVecBasicLayer",
+//     style: "default",
+//     format: "image/png",
+//     tileMatrixSetID: "GoogleMapsCompatible"
+// }),{
+//   show: true,
+//   alpha: 1
+// });
+
+
+    const viewer = new Cesium.Viewer("cesiumContainer", {
+      // baseLayer: Cesium.ImageryLayer.fromProviderAsync(osm),
+  terrain: Cesium.Terrain.fromWorldTerrain(),
+  shouldAnimate: true,
+});
+
+
+const osmBuiding=await Cesium.createOsmBuildingsAsync();
+viewer.scene.primitives.add(osmBuiding);
+// viewer.scene.primitives.add(osm);
+    
+   var apires= fetch('http://localhost:8000/query/?topic=长沙地铁&person=2号线')
+  .then(response => response.text())
+  .then(data => {
+    var res_list=JSON.parse(data)['results'][0][0];
+    console.log('res_list',res_list);
+    res_list.forEach(function(item) {
+    // 访问 'person' 字段
+    var person = item.person;
+    var coordinates=JSON.parse(item.location_geojson)['coordinates'];
+    var i=0;
+    coordinates.forEach(function(item){
+      i=i+10;
+      coordinatesList.push(i,item[0],item[1],0);//item[0],item[1],0
+    })
+    
+  });
+  var subArray = coordinatesList;//.slice(0, 60*4);
+  // console.log('data',subArray);
+  return subArray;
+  })
+  .catch(error => console.error('Error:', error));
+  // var subArray=null;
+  
+  apires.then(subArray=>{
+    console.log('data',subArray);
+
+    const czml = [
+  {
+    id: "document",
+    name: "CZML Point - Time Dynamic",
+    version: "1.0",
+  },
+  {
+    id: "point",
+    availability: "2012-08-04T16:00:00Z/2012-08-04T16:10:00Z",
+    position: {
+      epoch: "2012-08-04T16:00:00Z",
+      "cartographicDegrees":subArray,
+    },
+    model: {
+      gltf: "CesiumMilkTruck.glb",
+      scale: 140.0,
+      minimumPixelSize: 32,
+      "color": {
+            "rgba": [255, 255, 255, 255] // 设置颜色为白色
+        }
+    },
+    orientation:{
+      velocityReference:"#position"
+    },
+    viewFrom:{
+      cartesian:[-2080,-1715,779]
+    },
+    point: {
+      color: {
+        rgba: [255, 255, 255, 128],
+      },
+      outlineColor: {
+        rgba: [255, 0, 0, 128],
+      },
+      outlineWidth: 3,
+      pixelSize: 35,
+    },
+  },
+];
+
+
+
+
+var dataSource=Cesium.CzmlDataSource.load(czml);
+viewer.dataSources.add(dataSource);
+var filteredArray = [];
+for (var i = 1; i < subArray.length - 1; i += 4) {
+  // 检查索引是否有效
+  if (i + 1 < subArray.length) {
+    filteredArray.push(subArray[i]);
+    filteredArray.push(subArray[i + 1]);
+    // const cartesianPosition = Cesium.Cartographic.fromDegrees(
+    //   subArray[i], subArray[i+1]
+    // );
+    // const terrainProvider = viewer.scene.terrain;
+    // console.log('terrainProvider',terrainProvider);
+
+    // const height = viewer.scene.sampleHeight(
+    //     new Cesium.Cartographic(
+    //       Cesium.Math.toRadians(subArray[i]),//转换成弧度
+    //       Cesium.Math.toRadians(subArray[i+1]),//弧度
+    //     )
+    //   );
+    // console.log('terrainData',height);
+    // filteredArray.push(new Cesium.CartesiacartesianPositionn3.fromDegrees(subArray[i], subArray[i+1], height+10));
+    // filteredArray.push(subArray[i + 2]);
+  }
+}
+
+var positions = Cesium.Cartesian3.fromDegreesArray(filteredArray);
+
+var entity =viewer.entities.add({
+    polyline: {  
+    positions: positions, // 设置线条的坐标点  
+    width: 5, // 设置线条宽度  
+    // material: Cesium.Color.YELLOW.withAlpha(0.8), // 设置线条颜色和透明度 
+    // shape: {  /
+        // 使用PolylineGeometry代替positions  
+        // geodesic: true, // 根据需要设置为true，如果positions是经纬度并且你想要大圆路径  
+        // width: 5,
+        material: Cesium.Color.YELLOW,
+        // vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT, // 如果需要自定义颜色  
+        clampToGround: true,// 贴地  
+    // },
+    // 可以设置更多属性，如跟随地形等  
+}  
+});
+
+
+
+
+var beijingPosition = Cesium.Cartesian3.fromDegrees(filteredArray[0], filteredArray[1],100000);
+
+viewer.camera.flyTo({
+    destination: beijingPosition,
+    orientation: {
+        heading: Cesium.Math.toRadians(0),
+        pitch: Cesium.Math.toRadians(-90), // Look from top down
+        roll: 0
+    }
+});
+
+
+
+// if(!viewer.trackedEntity){
+//   console.log(dataSource.entities);
+//   viewer.trackedEntity=dataSource.entities.getById('point')
+// };
+})
+
+
+
+fetch('http://localhost:8000/querypoint?topic=长沙地铁&event_description=2号线')
+  .then(response => response.text())
+  .then(data => {
+    var res_list=JSON.parse(data)['results'][0][0];
+    res_list.forEach(function(item) {
+    // 访问 'person' 字段
+    var person = item.person;
+    // console.log('item',item);
+    viewer.entities.add({
+    position: Cesium.Cartesian3.fromDegrees(item.longitude, item.latitude, 120),
+    point: {
+        color: Cesium.Color.RED,
+        pixelSize: 10
+    },
+    label: {
+        text: person,
+        font: '24pt Source Han Sans CN',
+        fillColor: Cesium.Color.BLACK,
+        backgroundColor: Cesium.Color.AQUA,
+        showBackground: true,
+        outline: true,
+        outlineColor: Cesium.Color.WHITE,
+        outlineWidth: 10,
+        scale: 2.0,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        verticalOrigin: Cesium.VerticalOrigin.CENTER,
+        horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+        pixelOffset: new Cesium.Cartesian2(10, 0),
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(1000, 3000),
+        show: true
+    }
+});
+    
+  });
+  // var subArray = coordinatesList.slice(0, 60*4);
+  // console.log('data',subArray);
+  return subArray;
+  })
+  .catch(error => console.error('Error:', error));
+
+// var promise = Cesium.GeoJsonDataSource.load('yangzijiang.geojson');
+
+// promise.then(function(dataSource) {
+//     // Add the GeoJSON data to the viewer
+//     viewer.dataSources.add(dataSource);
+
+//     // Zoom to the loaded data
+//     viewer.zoomTo(dataSource);
+// }).otherwise(function(error){
+//     // Display an error message if loading fails
+//     console.error(error);
+// });
+
+
+    // const viewer = new Cesium.Viewer("cesiumContainer", {
+    // terrain: Cesium.Terrain.fromWorldTerrain(),
+    // baseLayerPicker: false,
+    // shouldAnimate: true,
+    // });
+    // const czmlUrl = 'test.czml';
+    // const dataSource = await viewer.dataSources.add(
+    // Cesium.CzmlDataSource.load(czml)
+    // );
+
+
+    
+
+    // viewer.trackedEntity = dataSource.entities.getById("path"); 
+
+    // // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
+    // const viewer = new Cesium.Viewer('cesiumContainer', {
+    //   terrain: Cesium.Terrain.fromWorldTerrain(),
+    // });    
+
+    // // Fly the camera to San Francisco at the given longitude, latitude, and height.
+    // viewer.camera.flyTo({
+    //   destination: Cesium.Cartesian3.fromDegrees(-122.4175, 37.655, 400),
+    //   orientation: {
+    //     heading: Cesium.Math.toRadians(0.0),
+    //     pitch: Cesium.Math.toRadians(-15.0),
+    //   }
+    // });
+
+    // // Add Cesium OSM Buildings, a global 3D buildings layer.
+    // const buildingTileset = await Cesium.createOsmBuildingsAsync();
+    // viewer.scene.primitives.add(buildingTileset);   
+  </script>
+ </div>
+</body>
+</html>
