@@ -38,11 +38,11 @@
   shouldAnimate: true,
 });
 
-// const nightLayer = viewer.imageryLayers.addImageryProvider(
-//         new Cesium.UrlTemplateImageryProvider({
-//             url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-//             subdomains: ["a", "b", "c", "d"],
-//         }));
+const nightLayer = viewer.imageryLayers.addImageryProvider(
+        new Cesium.UrlTemplateImageryProvider({
+            url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+            subdomains: ["a", "b", "c", "d"],
+        }));
 
 
 
@@ -50,7 +50,7 @@ const osmBuiding=await Cesium.createOsmBuildingsAsync();
 viewer.scene.primitives.add(osmBuiding);
 // viewer.scene.primitives.add(osm);
     
-   var apires= fetch('http://localhost:8000/query/?topic=成都景点&person=宽窄巷子3')
+   var apires= fetch('http://localhost:8000/query/?topic=成都地铁&person=7号线')
   .then(response => response.text())
   .then(data => {
     var res_list=JSON.parse(data)['results'][0][0];
@@ -67,7 +67,7 @@ viewer.scene.primitives.add(osmBuiding);
     
   });
   var subArray = coordinatesList;//.slice(0, 60*4);
-  // console.log('data',subArray);
+  console.log('coordinatesList',subArray);
   return subArray;
   })
   .catch(error => console.error('Error:', error));
@@ -90,9 +90,9 @@ viewer.scene.primitives.add(osmBuiding);
       "cartographicDegrees":subArray,
     },
     model: {
-      gltf: "Cesium_Man.glb",
-      scale: 30.0,
-      minimumPixelSize: 32,
+      gltf: "launchvehicle.glb",
+      scale: 120.0,
+      minimumPixelSize: 256,
       "color": {
             "rgba": [255, 255, 255, 255] // 设置颜色为白色
         }
@@ -188,120 +188,72 @@ viewer.camera.flyTo({
 
 
 
-fetch('http://localhost:8000/querypoint?topic=成都景点&person=宽窄巷子')
-  .then(response => response.text())
-  .then(data => {
-    var res_list=JSON.parse(data)['results'][0][0];
-    res_list.forEach(function(item) {
-    // 访问 'person' 字段
-    var person = item.person;
-    // console.log('item',item);
-    var position=Cesium.Cartesian3.fromDegrees(item.longitude, item.latitude, 500)
-    viewer.entities.add({
-    position: position,
-    point: {
-        color: Cesium.Color.RED,
-        pixelSize: 10
-    },
-    label: {
-        text: person,
-        font: '16pt Source Han Sans CN',
-        fillColor: Cesium.Color.BLACK,
-        backgroundColor: Cesium.Color.AQUA,
-        showBackground: true,
-        outline: true,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 10,
-        scale: 2.0,
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        verticalOrigin: Cesium.VerticalOrigin.CENTER,
-        horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
-        pixelOffset: new Cesium.Cartesian2(10, 0),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(100, 3000),
-        show: true
-    }
-});
-var n=1;
-var circle1 = viewer.entities.add({
-            position: position,
-            ellipse: {
-                semiMajorAxis: new Cesium.CallbackProperty(function() {
-                // 这里可以定义动态变化的逻辑
-                // 例如，我们让半长轴的大小随时间线性增加
-                n=n+1;
-                var remainder1 = (n % 100)*1;
-                return remainder1;
-                }, false),
-                semiMinorAxis: new Cesium.CallbackProperty(function() {
-                    // 这里可以定义动态变化的逻辑
-                    // 例如，我们让半短轴的大小随时间线性减小
-                    // n=n+1;
-                    var remainder1 =(n % 100)*1;
-                    return remainder1;
-                }, false),
-                material: Cesium.Color.YELLOW.withAlpha(0.5), // 圆的颜色和透明度
-                outline: true, // 是否显示轮廓
-                outlineColor: Cesium.Color.BLACK,// 轮廓颜色
-                // fill: false ,// 不填充内部
-                // outlineWidth: 50, // 设置轮廓线宽度为5像素
-            }
-        });
-    
-  });
-  // var subArray = coordinatesList.slice(0, 60*4);
-  // console.log('data',subArray);
-  return subArray;
-  })
-  .catch(error => console.error('Error:', error));
-
-
-
-// var promise = Cesium.GeoJsonDataSource.load('yangzijiang.geojson');
-
-// promise.then(function(dataSource) {
-//     // Add the GeoJSON data to the viewer
-//     viewer.dataSources.add(dataSource);
-
-//     // Zoom to the loaded data
-//     viewer.zoomTo(dataSource);
-// }).otherwise(function(error){
-//     // Display an error message if loading fails
-//     console.error(error);
+// fetch('http://localhost:8000/querypoint?topic=成都景点&person=宽窄巷子')
+//   .then(response => response.text())
+//   .then(data => {
+//     var res_list=JSON.parse(data)['results'][0][0];
+//     res_list.forEach(function(item) {
+//     // 访问 'person' 字段
+//     var person = item.person;
+//     // console.log('item',item);
+//     var position=Cesium.Cartesian3.fromDegrees(item.longitude, item.latitude, 500)
+//     viewer.entities.add({
+//     position: position,
+//     point: {
+//         color: Cesium.Color.RED,
+//         pixelSize: 10
+//     },
+//     label: {
+//         text: person,
+//         font: '16pt Source Han Sans CN',
+//         fillColor: Cesium.Color.BLACK,
+//         backgroundColor: Cesium.Color.AQUA,
+//         showBackground: true,
+//         outline: true,
+//         outlineColor: Cesium.Color.WHITE,
+//         outlineWidth: 10,
+//         scale: 2.0,
+//         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+//         verticalOrigin: Cesium.VerticalOrigin.CENTER,
+//         horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+//         pixelOffset: new Cesium.Cartesian2(10, 0),
+//         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(100, 3000),
+//         show: true
+//     }
 // });
-
-
-    // const viewer = new Cesium.Viewer("cesiumContainer", {
-    // terrain: Cesium.Terrain.fromWorldTerrain(),
-    // baseLayerPicker: false,
-    // shouldAnimate: true,
-    // });
-    // const czmlUrl = 'test.czml';
-    // const dataSource = await viewer.dataSources.add(
-    // Cesium.CzmlDataSource.load(czml)
-    // );
-
-
+// var n=1;
+// var circle1 = viewer.entities.add({
+//             position: position,
+//             ellipse: {
+//                 semiMajorAxis: new Cesium.CallbackProperty(function() {
+//                 // 这里可以定义动态变化的逻辑
+//                 // 例如，我们让半长轴的大小随时间线性增加
+//                 n=n+1;
+//                 var remainder1 = (n % 100)*1;
+//                 return remainder1;
+//                 }, false),
+//                 semiMinorAxis: new Cesium.CallbackProperty(function() {
+//                     // 这里可以定义动态变化的逻辑
+//                     // 例如，我们让半短轴的大小随时间线性减小
+//                     // n=n+1;
+//                     var remainder1 =(n % 100)*1;
+//                     return remainder1;
+//                 }, false),
+//                 material: Cesium.Color.YELLOW.withAlpha(0.5), // 圆的颜色和透明度
+//                 outline: true, // 是否显示轮廓
+//                 outlineColor: Cesium.Color.BLACK,// 轮廓颜色
+//                 // fill: false ,// 不填充内部
+//                 // outlineWidth: 50, // 设置轮廓线宽度为5像素
+//             }
+//         });
     
+//   });
+//   // var subArray = coordinatesList.slice(0, 60*4);
+//   // console.log('data',subArray);
+//   // return subArray;
+//   })
+//   .catch(error => console.error('Error:', error));
 
-    // viewer.trackedEntity = dataSource.entities.getById("path"); 
-
-    // // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
-    // const viewer = new Cesium.Viewer('cesiumContainer', {
-    //   terrain: Cesium.Terrain.fromWorldTerrain(),
-    // });    
-
-    // // Fly the camera to San Francisco at the given longitude, latitude, and height.
-    // viewer.camera.flyTo({
-    //   destination: Cesium.Cartesian3.fromDegrees(-122.4175, 37.655, 400),
-    //   orientation: {
-    //     heading: Cesium.Math.toRadians(0.0),
-    //     pitch: Cesium.Math.toRadians(-15.0),
-    //   }
-    // });
-
-    // // Add Cesium OSM Buildings, a global 3D buildings layer.
-    // const buildingTileset = await Cesium.createOsmBuildingsAsync();
-    // viewer.scene.primitives.add(buildingTileset);   
   </script>
  </div>
 </body>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Include the CesiumJS JavaScript and CSS files -->
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <script type="module">
+    function heightAtTime(t) {
+  // const a = 148 / (1200 * 1200);
+  // const t0 = 1200;
+  return -t*(t-2400);
+}
+function dynamicLine(viewer,positionsArr){
+        
+        var n = 0; // 每个线段的n变量
+
+        var entity = viewer.entities.add({
+            polyline: {
+                positions: new Cesium.CallbackProperty(function (time, result) {
+                    // 根据当前时间计算端点的位置
+                    n = n + 1;
+                    var remainder1 = Math.floor(n*0.3) % positionsArr.length;
+
+                    // 返回更新后的线段位置数组
+                    return positionsArr.slice(0, remainder1);
+                }, false),
+                width: 5, // 设置线条宽度
+                // material:getRandomRGBColor()
+                material: Cesium.Color.YELLOW.withAlpha(0.8)
+            }
+        });
+    }
+
+    // Your access token can be found at: https://ion.cesium.com/tokens.
+    // Replace `your_access_token` with your Cesium ion access token.
+
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4ZTdiNDkzZi05MTBmLTQ3MWYtOGE1Ny1iNmI1MjllZGEyNDMiLCJpZCI6NTc5MDYsImlhdCI6MTcxMzc2Njk5NX0.sALSZ21qi9jXbazm5TRDwLL_mKGGokDUjj8f2VHsgpw';
+    var coordinatesList = [];
+    const osm = new Cesium.OpenStreetMapImageryProvider({
+    url : 'https://tile.openstreetmap.org/'
+});
+
+// let gaodeVecBaseMapLayer = new Cesium.ImageryLayer(new Cesium.UrlTemplateImageryProvider({
+//     url: "http://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+//     layer: "tdtVecBasicLayer",
+//     style: "default",
+//     format: "image/png",
+//     tileMatrixSetID: "GoogleMapsCompatible"
+// }),{
+//   show: true,
+//   alpha: 1
+// });
+
+
+    const viewer = new Cesium.Viewer("cesiumContainer", {
+      // baseLayer: Cesium.ImageryLayer.fromProviderAsync(osm),
+  terrain: Cesium.Terrain.fromWorldTerrain(),
+  // baseLayer: new Cesium.ImageryLayer.fromProviderAsync(
+  //   Cesium.IonImageryProvider.fromAssetId(3812)),
+  shouldAnimate: true,
+});
+
+// const nightLayer = viewer.imageryLayers.addImageryProvider(
+//         new Cesium.UrlTemplateImageryProvider({
+//             url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+//             subdomains: ["a", "b", "c", "d"],
+//         }));
+
+
+
+// const osmBuiding=await Cesium.createOsmBuildingsAsync();
+// viewer.scene.primitives.add(osmBuiding);
+
+var subArray= await fetch('http://localhost:8000/query/?topic=星舰发射')
+  .then(response => response.text())
+  .then(data => {
+    var coordinatesList=[];
+    
+    var res_list=JSON.parse(data)['results'][0][0];
+    console.log('res_list',res_list);
+    var linepoints=[]
+    var dynamnicLine=[]
+    res_list.forEach(function(item) {
+    // 访问 'person' 字段
+    
+    var person = item.person;
+    
+    var coordinates=JSON.parse(item.location_geojson)['coordinates'];
+    var i=0;
+    // console.log('res_list',coordinates);
+    
+    coordinates.forEach(function(item){
+      
+      linepoints.push(i,item[0],item[1],heightAtTime(i));//item[0],item[1],0
+      dynamnicLine.push(item[0],item[1],heightAtTime(i))
+      i=i+20;
+    });
+    // coordinatesList.push(linepoints);
+    var positions = Cesium.Cartesian3.fromDegreesArrayHeights(dynamnicLine);
+        // console.log('positions',positions);
+        dynamicLine(viewer,positions)
+  });
+
+  return linepoints;
+});
+
+// console.log('coordinatesList',coordinatesList);
+
+// var subArray=[];
+// for(var i=1;i<60;i++){
+//     subArray.push(i*40,116,39,40*i*i);
+// }
+console.log('subArray',subArray);
+    const czml = [
+  {
+    id: "document",
+    name: "CZML Point - Time Dynamic",
+    version: "1.0",
+  },
+  {
+    id: "point",
+    availability: "2012-08-04T16:00:00Z/2012-08-04T16:20:00Z",
+    position: {
+      epoch: "2012-08-04T16:00:00Z",
+      "cartographicDegrees":subArray,
+    },
+    model: {
+      gltf: "launchvehicle.glb",
+      scale: 120.0,
+      minimumPixelSize: 256,
+      "color": {
+            "rgba": [255, 255, 255, 255] // 设置颜色为白色
+        }
+    },
+    orientation:{
+      velocityReference:"#position"
+    },
+    viewFrom:{
+      cartesian:[-2080,-1715,779]
+    },
+    // point: {
+    //   color: {
+    //     rgba: [255, 255, 255, 128],
+    //   },
+    //   outlineColor: {
+    //     rgba: [255, 0, 0, 128],
+    //   },
+    //   outlineWidth: 3,
+    //   pixelSize: 35,
+    // },
+  },
+];
+
+
+
+
+// var dataSource=Cesium.CzmlDataSource.load(czml);
+
+// viewer.dataSources.add(dataSource);
+var filteredArray = [];
+for (var i = 1; i < subArray.length - 1; i += 4) {
+  // 检查索引是否有效
+  if (i + 1 < subArray.length) {
+    filteredArray.push(subArray[i]);
+    filteredArray.push(subArray[i + 1]);
+  }
+}
+
+// var positions = Cesium.Cartesian3.fromDegreesArray(filteredArray);
+
+// var entity =viewer.entities.add({
+//     polyline: {  
+//     positions: positions, // 设置线条的坐标点  
+//     width: 5, // 设置线条宽度  
+//     // material: Cesium.Color.YELLOW.withAlpha(0.8), // 设置线条颜色和透明度 
+//     // shape: {  /
+//         // 使用PolylineGeometry代替positions  
+//         // geodesic: true, // 根据需要设置为true，如果positions是经纬度并且你想要大圆路径  
+//         // width: 5,
+//         material: Cesium.Color.YELLOW,
+//         // vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT, // 如果需要自定义颜色  
+//         clampToGround: true,// 贴地  
+//     // },
+//     // 可以设置更多属性，如跟随地形等  
+// }  
+// });
+
+
+
+
+var beijingPosition = Cesium.Cartesian3.fromDegrees(filteredArray[0], filteredArray[1],100000);
+
+viewer.camera.flyTo({
+    destination: beijingPosition,
+    orientation: {
+        heading: Cesium.Math.toRadians(0),
+        pitch: Cesium.Math.toRadians(-90), // Look from top down
+        roll: 0
+    }
+});
+
+
+
+// if(!viewer.trackedEntity){
+//   console.log(dataSource.entities);
+//   viewer.trackedEntity=dataSource.entities.getById('point')
+// };
+// })
+viewer.clock.shouldAnimate = true;
+    viewer.timeline.makeLabel();
+
+  </script>
+ </div>
+</body>
+</html>

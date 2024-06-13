@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Cesium Line Animation with CallbackProperty</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<script type="module">
+    function getRandomRGBColor() {
+    var r = Math.floor(Math.random() * 256);
+    var g = Math.floor(Math.random() * 256);
+    var b = Math.floor(Math.random() * 256);
+    return Cesium.Color.fromBytes(r, g, b, 255); // 255代表完全不透明
+}
+
+    function dynamicLine(viewer,positionsArr){
+        
+        var n = 0; // 每个线段的n变量
+
+        var entity = viewer.entities.add({
+            polyline: {
+                positions: new Cesium.CallbackProperty(function (time, result) {
+                    // 根据当前时间计算端点的位置
+                    n = n + 1;
+                    var remainder1 = (n ) % positionsArr.length;
+
+                    // 返回更新后的线段位置数组
+                    return positionsArr.slice(0, remainder1);
+                }, false),
+                width: 5, // 设置线条宽度
+                material:getRandomRGBColor()
+                // material: Cesium.Color.YELLOW.withAlpha(0.8)
+            }
+        });
+    }
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4ZTdiNDkzZi05MTBmLTQ3MWYtOGE1Ny1iNmI1MjllZGEyNDMiLCJpZCI6NTc5MDYsImlhdCI6MTcxMzc2Njk5NX0.sALSZ21qi9jXbazm5TRDwLL_mKGGokDUjj8f2VHsgpw';
+const viewer = new Cesium.Viewer("cesiumContainer", {
+    terrain: Cesium.Terrain.fromWorldTerrain(),
+  shouldAnimate: true,
+});
+
+// const osmBuiding=await Cesium.createOsmBuildingsAsync();
+// viewer.scene.primitives.add(osmBuiding);
+
+// viewer.dataSources.add(Cesium.CzmlDataSource.load(czml));
+
+var coordinatesList= await fetch('http://localhost:8000/query/?topic=成都地铁')
+  .then(response => response.text())
+  .then(data => {
+    var coordinatesList=[];
+    
+    var res_list=JSON.parse(data)['results'][0][0];
+    console.log('res_list',res_list);
+    res_list.forEach(function(item) {
+    // 访问 'person' 字段
+    var linepoints=[]
+    var person = item.person;
+    
+    var coordinates=JSON.parse(item.location_geojson)['coordinates'];
+    var i=0;
+    // console.log('res_list',coordinates);
+    
+    coordinates.forEach(function(item){
+      i=i+10;
+      linepoints.push(item[0],item[1]);//item[0],item[1],0
+    });
+    coordinatesList.push(linepoints);
+  });
+
+  return coordinatesList;
+});
+
+console.log('coordinatesList',coordinatesList);
+
+
+for (var i=0;i<coordinatesList.length;i++){
+
+
+        var positions = Cesium.Cartesian3.fromDegreesArray(coordinatesList[i]);
+        console.log('positions',positions);
+        dynamicLine(viewer,positions)
+    //     (function() {
+    //     var n = 0; // 每个线段的n变量
+
+    //     var entity = viewer.entities.add({
+    //         polyline: {
+    //             positions: new Cesium.CallbackProperty(function (time, result) {
+    //                 // 根据当前时间计算端点的位置
+    //                 n = n + 1;
+    //                 var remainder1 = (n * 10) % positions.length;
+
+    //                 // 返回更新后的线段位置数组
+    //                 return positions.slice(0, remainder1);
+    //             }, false),
+    //             width: 5, // 设置线条宽度
+    //             material: Cesium.Color.YELLOW.withAlpha(0.8)
+    //         }
+    //     });
+
+    //     // 可以在这里添加其他需要的逻辑，例如控制动画的速度等
+    // })();
+    
+    //     var n=0;
+    //     var entity =viewer.entities.add({
+    //     polyline: {  
+    //     positions: new Cesium.CallbackProperty(function (time, result) {
+    //         // 根据当前时间计算端点的位置
+    //         n=n+1;
+    //         var remainder1 = (n*10) % positions.length;
+
+    //         // 返回更新后的线段位置数组
+    //         return positions.slice(0,remainder1);
+    //     }, false), // 设置线条的坐标点  
+    //     width: 5, // 设置线条宽度  
+    //     material:Cesium.Color.YELLOW.withAlpha(0.8)
+    //     // material:Cesium.Color.fromBytes(165, 42, 42, 204)// Cesium.Color.YELLOW.withAlpha(0.8) // 设置线条颜色和透明度  
+    //     // 可以设置更多属性，如跟随地形等  
+    // }  
+    // });
+}
+
+
+
+
+
+
+// var allCoordinates=  await Cesium.GeoJsonDataSource.load('成都2.geojson').then(function(dataSource) {
+//     var allCoordinates = [];
+
+//     // 将DataSource添加到场景中（可选）
+//     // viewer.dataSources.add(dataSource);
+    
+
+//     // 遍历GeoJSON中的所有实体
+//     dataSource.entities.values.forEach(function(entity) {
+        
+//         if (entity.polyline || entity.polygon) {
+//             // 对于线或面，提取路径坐标
+            
+//             var positions = entity.polyline ? entity.polyline.positions : entity.polygon.hierarchy ? entity.polygon.hierarchy : entity.polygon.positions;
+//             // console.log('positions',positions.getValue()['positions']);
+//             // allCoordinates = allCoordinates.concat(positions.getValue());//线
+//             allCoordinates = allCoordinates.concat(positions.getValue()['positions']);//面
+//         } else if (entity.point) {
+//             // 对于点，直接提取位置
+//             var position = entity.point.position;
+//             allCoordinates.push(position.get());
+//         }
+//     });
+//     return allCoordinates;
+//     // 此时，allCoordinates数组包含了GeoJSON中的所有坐标点
+//     // console.log(allCoordinates);
+// });
+
+// var entity =viewer.entities.add({
+//         polyline: {  
+//         positions: allCoordinates, // 设置线条的坐标点  
+//         width: 5, // 设置线条宽度  
+//         material:Cesium.Color.YELLOW.withAlpha(0.8)
+//         // material:Cesium.Color.fromBytes(165, 42, 42, 204)// Cesium.Color.YELLOW.withAlpha(0.8) // 设置线条颜色和透明度  
+//         // 可以设置更多属性，如跟随地形等  
+//     }  
+//     });
+
+// console.log('allCoordinates',allCoordinates.length);
+//     // var positions = Cesium.Cartesian3.fromDegreesArray([
+//     //     116.3974, 39.9093,
+//     //     116.4101, 39.9096,
+//     //     116.4155, 39.8938,
+//     //     116.3987, 39.8923
+//     //     ]);
+
+//     var polylineEntity =viewer.entities.add({
+//         polyline: {  
+//         positions: allCoordinates, // 设置线条的坐标点  
+//         width: 10, // 设置线条宽度  
+//         material: new Cesium.PolylineGlowMaterialProperty({
+//             glowPower: 1, // 发光强度
+//             color: Cesium.Color.YELLOW // 发光颜色
+//         }), // 设置线条颜色和透明度  
+//         // 可以设置更多属性，如跟随地形等  
+//     }  
+//     });
+
+//     // entity.polyline.positions =Cesium.Cartesian3.fromDegreesArray([
+//     //     116.3974, 39.9093,
+//     //     116.4101, 39.9096,]);
+
+//     var beijingPosition = Cesium.Cartesian3.fromDegrees(116.3974, 33.9093,10000000);
+    
+//     viewer.camera.flyTo({
+//         destination: beijingPosition,
+//         orientation: {
+//             heading: Cesium.Math.toRadians(0),
+//             pitch: Cesium.Math.toRadians(-90), // Look from top down
+//             roll: 0
+//         }
+// });
+
+
+// var positionsProperty = new Cesium.CallbackProperty(function (time, result) {
+//     // 根据当前时间计算端点的位置
+//     n=n+1;
+//     var remainder1 = (n*10) % allCoordinates.length;
+
+//     // 返回更新后的线段位置数组
+//     return allCoordinates.slice(0,remainder1);
+// }, false);
+
+// polylineEntity.polyline.positions = positionsProperty;
+
+
+
+//     // 启动动画
+    viewer.clock.shouldAnimate = true;
+    viewer.timeline.makeLabel();
+</script>
+</body>
+</html>

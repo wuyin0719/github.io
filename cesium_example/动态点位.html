@@ -13,7 +13,80 @@
 </head>
 <body>
     <div id="cesiumContainer"></div>
-    <script>
+    <script type="module">
+        function DynamicPoints(viewer,item){
+            var longtitude=item.longtitude;
+            var latitude=item.latitude;
+            var name=item.person;
+            var position = Cesium.Cartesian3.fromDegrees(longtitude,latitude, 1000);
+
+            // var textposition = Cesium.Cartesian3.clone(position); // 复制原始点
+            // textposition.height = 2500; // 设置新的高度值
+
+
+            // 添加点位
+            var billboard = viewer.entities.add({
+                position: position,
+                billboard: {
+                    // image: 'path/to/your/image.png', // 点位图片路径
+                    width: 50, // 图片宽度
+                    height: 50, // 图片高度
+                    eyeOffset: new Cesium.Cartesian3(0.0, 0.0, -50) // 将点位向下偏移
+                }
+            });
+            var n=1;
+            // 添加动态圆
+            var circle1 = viewer.entities.add({
+                position: position,
+                ellipse: {
+                    semiMajorAxis: new Cesium.CallbackProperty(function() {
+                    // 这里可以定义动态变化的逻辑
+                    // 例如，我们让半长轴的大小随时间线性增加
+                    n=n+1;
+                    var remainder1 = (n % 100)*1000;
+                    return remainder1;
+                    }, false),
+                    semiMinorAxis: new Cesium.CallbackProperty(function() {
+                        // 这里可以定义动态变化的逻辑
+                        // 例如，我们让半短轴的大小随时间线性减小
+                        // n=n+1;
+                        var remainder1 =(n % 100)*1000;
+                        return remainder1;
+                    }, false),
+                    material: Cesium.Color.YELLOW.withAlpha(0.5), // 圆的颜色和透明度
+                    outline: true, // 是否显示轮廓
+                    outlineColor: Cesium.Color.BLACK,// 轮廓颜色
+                    // fill: false ,// 不填充内部
+                    // outlineWidth: 50, // 设置轮廓线宽度为5像素
+                }
+            });
+            // 118.16581,30.13645
+            var textposition = Cesium.Cartesian3.fromDegrees(longtitude,latitude, 80000);
+            // 添加旋转文字
+            var label = viewer.entities.add({
+                position: textposition,
+                label: {
+                    // text: name,
+                    text: name.split('').join('\n'),
+                    font: '20pt Source Han Sans CN',
+                    fillColor: Cesium.Color.BLACK,
+                    backgroundColor: Cesium.Color.AQUA,
+                    showBackground: true,
+                    outline: true,
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    outlineWidth: 2,
+                    outlineColor: Cesium.Color.BLACK,
+                    eyeOffset: new Cesium.Cartesian3(0.0, 0.0, 100), // 将文字向上偏移
+                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+                    verticalOrigin: Cesium.VerticalOrigin.CENTER,
+                    // eyeOffset: new Cesium.Cartesian3(0.0, 0.0, 10)
+                }
+            });
+        }
+        // var longtitude=item.longtitude;
+        // var latitude=item.latitude;
+        // var name=item.person;
+        // longtitude,latitude,name
         // 初始化Cesium Viewer
         // var viewer = new Cesium.Viewer('cesiumContainer', {
         //     terrain: Cesium.Terrain.fromWorldTerrain(),
@@ -25,66 +98,43 @@
         terrain: Cesium.Terrain.fromWorldTerrain(),
         shouldAnimate: true,
         });
+        var coordinatesList= await fetch('http://localhost:8000/querypoint?topic=前20大学')
+        .then(response => response.text())
+        .then(data => {
+            var coordinatesList=[];
+            
+            var res_list=JSON.parse(data)['results'][0][0];
+            res_list.forEach(function(item) {
+            // 访问 'person' 字段
+            // var linepoints=[]
+            // console.log('item',item);
 
+            // var person = item.person;
+            
+            // var coordinates=JSON.parse(item.location_geojson)['coordinates'];
+            // var i=0;
+            // // console.log('res_list',coordinates);
+            
+            // coordinates.forEach(function(item){
+            // i=i+10;
+            // linepoints.push(item[0],item[1]);//item[0],item[1],0
+            // });
+            coordinatesList.push(item);
+        });
+
+        return coordinatesList;
+        });
+
+        console.log('coordinatesList',coordinatesList);
+
+        for (var i=0;i<coordinatesList.length;i++){
+
+            console.log('coordinatesList',coordinatesList[i]);
+            DynamicPoints(viewer,coordinatesList[i]);
+        }
+        // DynamicPoints(viewer,118.16581,30.13645,'黄山');
+        var textposition = Cesium.Cartesian3.fromDegrees(118.16581,30.13645, 550000);
         // 北京的经纬度和高度
-        var position = Cesium.Cartesian3.fromDegrees(118.16581,30.13645, 100);
-
-        // 添加点位
-        var billboard = viewer.entities.add({
-            position: position,
-            billboard: {
-                // image: 'path/to/your/image.png', // 点位图片路径
-                width: 50, // 图片宽度
-                height: 50, // 图片高度
-                eyeOffset: new Cesium.Cartesian3(0.0, 0.0, -50) // 将点位向下偏移
-            }
-        });
-        var n=1;
-        // 添加动态圆
-        var circle1 = viewer.entities.add({
-            position: position,
-            ellipse: {
-                semiMajorAxis: new Cesium.CallbackProperty(function() {
-                // 这里可以定义动态变化的逻辑
-                // 例如，我们让半长轴的大小随时间线性增加
-                n=n+1;
-                var remainder1 = (n % 100)*100;
-                return remainder1;
-                }, false),
-                semiMinorAxis: new Cesium.CallbackProperty(function() {
-                    // 这里可以定义动态变化的逻辑
-                    // 例如，我们让半短轴的大小随时间线性减小
-                    // n=n+1;
-                    var remainder1 =(n % 100)*100;
-                    return remainder1;
-                }, false),
-                material: Cesium.Color.YELLOW.withAlpha(0.5), // 圆的颜色和透明度
-                outline: true, // 是否显示轮廓
-                outlineColor: Cesium.Color.BLACK,// 轮廓颜色
-                // fill: false ,// 不填充内部
-                // outlineWidth: 50, // 设置轮廓线宽度为5像素
-            }
-        });
-
-        var textposition = Cesium.Cartesian3.fromDegrees(118.16581,30.13645, 2500);
-        // 添加旋转文字
-        var label = viewer.entities.add({
-            position: textposition,
-            label: {
-                text: '黄山',
-                font: '24pt Source Han Sans CN',
-                fillColor: Cesium.Color.BLACK,
-                backgroundColor: Cesium.Color.AQUA,
-                showBackground: true,
-                outline: true,
-                style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-                outlineWidth: 2,
-                outlineColor: Cesium.Color.BLACK,
-                eyeOffset: new Cesium.Cartesian3(0.0, 0.0, 100), // 将文字向上偏移
-                horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-                verticalOrigin: Cesium.VerticalOrigin.CENTER
-            }
-        });
 
         viewer.camera.flyTo({
         destination: textposition,
