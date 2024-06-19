@@ -121,22 +121,22 @@ var polyline =viewer.entities.add({
 viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP; // 循环播放
 viewer.clock.multiplier = 1000; // 时间轴的速度
 
-function updatePolyline(time) {
-  console.log(time);
+// function updatePolyline(time) {
+//   console.log(time);
 
-   var index = Math.floor(time % positions.length);
-    var newPositions =positions.slice(0,index);
-    // console.log('newPositions',time,index,newPositions);
-    console.log('newPositions',time,index);
-//     // polyline.set
-    polyline.positions=newPositions;
-    viewer.entities.update(Date.now()); 
-}
+//    var index = Math.floor(time % positions.length);
+//     var newPositions =positions.slice(0,index);
+//     // console.log('newPositions',time,index,newPositions);
+//     console.log('newPositions',time,index);
+// //     // polyline.set
+//     polyline.positions=newPositions;
+//     viewer.entities.update(Date.now()); 
+// }
 
-// 监听时间轴的tick事件来更新线的位置
-viewer.clock.onTick.addEventListener(function(clock) {
-    updatePolyline(clock.currentTime.secondsOfDay);
-});
+// // 监听时间轴的tick事件来更新线的位置
+// viewer.clock.onTick.addEventListener(function(clock) {
+//     updatePolyline(clock.currentTime.secondsOfDay);
+// });
 
 // // 启动动画
 viewer.clock.startTime = Cesium.JulianDate.now();

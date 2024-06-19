@@ -93,10 +93,11 @@ console.log('allCoordinates',allCoordinates.length);
             roll: 0
         }
 });
-var n=0;
 
+var n=0;
 var positionsProperty = new Cesium.CallbackProperty(function (time, result) {
     // 根据当前时间计算端点的位置
+    
     n=n+1;
     var remainder1 = (n*10) % allCoordinates.length;
 
